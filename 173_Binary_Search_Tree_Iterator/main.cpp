@@ -6,6 +6,7 @@
 #include <map>
 #include <any>
 #include <functional>
+#include <stack>
 
 #include "binary_tree.hpp"
 
@@ -13,37 +14,28 @@ using namespace std;
 
 
 class BSTIterator {
-    TreeNode* root = NULL;
-    int curr_ptr;
+    stack<TreeNode *> s;
 public:
-    BSTIterator(TreeNode* _root) {
-        root = _root;
-        curr_ptr = -1;
-    }
-
-    int search_next(TreeNode* curr_root, int a, int possible_next) {
-        TreeNode* next_root = curr_root->right;
-        if (a < curr_root->val) {
-            possible_next = curr_root->val;
-            next_root     = curr_root->left;
-        }
-        if (next_root == nullptr)
-            return possible_next >= curr_root->val ? possible_next : curr_root->val;
-        return search_next(next_root, a, possible_next);
+    BSTIterator(TreeNode* root) {
+        partialInorder(root);
     }
 
     int next() {
-        TreeNode* tmp = root;
-        curr_ptr = search_next(tmp, curr_ptr, curr_ptr);
-        return curr_ptr;
+        TreeNode* top = s.top();
+        s.pop();
+        partialInorder(top->right);
+        return top->val;
     }
 
     bool hasNext() {
-        TreeNode* tmp = root;
-        int old_curr_ptr = curr_ptr;
-        int new_curr_ptr = 0;
-        new_curr_ptr = search_next(tmp, curr_ptr, curr_ptr);
-        return new_curr_ptr != old_curr_ptr;
+        return !s.empty();
+    }
+
+    void partialInorder(TreeNode* root) {
+        while (root != NULL) {
+            s.push(root);
+            root = root->left;
+        }
     }
 
     void runCommands(const vector<string>& cmds, const vector<vector<std::any>>& args) {
